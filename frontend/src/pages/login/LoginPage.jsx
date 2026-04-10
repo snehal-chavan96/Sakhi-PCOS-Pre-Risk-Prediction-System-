@@ -1,11 +1,16 @@
 import { useState } from "react";
 import { Lock, Mail, Eye, EyeOff } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import authService from "../../services/authService";
 import "./LoginPage.css";
 
 export default function LoginPage() {
 
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   const [formData, setFormData] = useState({
     email: "",
@@ -17,11 +22,42 @@ export default function LoginPage() {
       ...formData,
       [e.target.name]: e.target.value
     });
+    setError(""); // Clear error when user starts typing
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Login attempt:", formData);
+    setError("");
+    setSuccess("");
+    setLoading(true);
+
+    try {
+      // Validate inputs
+      if (!formData.email || !formData.password) {
+        setError("Please fill in all fields");
+        setLoading(false);
+        return;
+      }
+
+      // Call login API
+      const response = await authService.loginUser(formData.email, formData.password);
+
+      if (response.success) {
+        setSuccess("Login successful! Redirecting...");
+        
+        // Reset form
+        setFormData({ email: "", password: "" });
+        
+        // Redirect to homepage after a short delay
+        setTimeout(() => {
+          navigate("/");
+        }, 1000);
+      }
+    } catch (err) {
+      setError(err.message || "Login failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -63,6 +99,22 @@ export default function LoginPage() {
               <p className="text-muted mb-4">
                 Enter your credentials to access your account
               </p>
+
+              {/* ERROR MESSAGE */}
+              {error && (
+                <div className="alert alert-danger alert-dismissible fade show" role="alert">
+                  {error}
+                  <button type="button" className="btn-close" onClick={() => setError("")}></button>
+                </div>
+              )}
+
+              {/* SUCCESS MESSAGE */}
+              {success && (
+                <div className="alert alert-success alert-dismissible fade show" role="alert">
+                  {success}
+                  <button type="button" className="btn-close" onClick={() => setSuccess("")}></button>
+                </div>
+              )}
 
               <form onSubmit={handleSubmit}>
 
@@ -150,8 +202,12 @@ export default function LoginPage() {
 
 
                 {/* LOGIN BUTTON */}
-                <button className="btn login-btn w-100">
-                  Login
+                <button 
+                  className="btn login-btn w-100" 
+                  type="submit" 
+                  disabled={loading}
+                >
+                  {loading ? "Logging in..." : "Login"}
                 </button>
 
               </form>
