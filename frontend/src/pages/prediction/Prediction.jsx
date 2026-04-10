@@ -1,11 +1,18 @@
-import React from "react";
-import Data from "./Data";
+import Data from "./Data"
+import ThyroidForm from "./ThyroidForm"
+
 export default function Prediction(){
-    return(
-        <div>
-            <>
-            <Data />
-            </>
-        </div>
-    );
+
+return(
+
+<div>
+
+    <Data/>
+
+    <ThyroidForm/>
+
+</div>
+
+)
+
 }

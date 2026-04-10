@@ -4,6 +4,8 @@ import HomePage from "./pages/home/HomePage";
 import AboutPage from "./pages/about/AboutPage";
 import Prediction from "./pages/prediction/Prediction";
 import Footer from "./components/Footer";
+import Login from "./pages/login/LoginPage";
+import Signup from "./pages/signup/SignupPage";
 
 export default function App() {
   return (
@@ -13,6 +15,8 @@ export default function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/about-pcos" element={<AboutPage/>} />
         <Route path="/prediction" element={<Prediction/>} />
+        <Route path="/login" element={<Login/>} />
+        <Route path="/signup" element={<Signup/>} />
       </Routes>
       <Footer/>
     </>
