@@ -17,7 +17,10 @@ export default function SignupPage() {
     name: "",
     email: "",
     password: "",
-    confirmPassword: ""
+    confirmPassword: "",
+    role: "user",
+    specialization: "",
+    experience: ""
   });
 
   const handleChange = (e) => {
@@ -36,10 +39,24 @@ export default function SignupPage() {
 
     try {
       // Validate inputs
-      if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword) {
+      if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword || !formData.role) {
         setError("Please fill in all fields");
         setLoading(false);
         return;
+      }
+
+      // Validate doctor-specific fields
+      if (formData.role === "doctor") {
+        if (!formData.specialization || !formData.experience) {
+          setError("Please fill in specialization and experience for doctor registration");
+          setLoading(false);
+          return;
+        }
+        if (isNaN(formData.experience) || formData.experience < 0) {
+          setError("Experience must be a valid number");
+          setLoading(false);
+          return;
+        }
       }
 
       // Validate password length
@@ -65,11 +82,14 @@ export default function SignupPage() {
       }
 
       // Call register API
-      const response = await authService.registerUser(
-        formData.name,
-        formData.email,
-        formData.password
-      );
+      const response = await authService.registerUser({
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        role: formData.role,
+        specialization: formData.role === "doctor" ? formData.specialization : null,
+        experience: formData.role === "doctor" ? formData.experience : null
+      });
 
       if (response.success) {
         setSuccess("Registration successful! Redirecting to login...");
@@ -79,7 +99,10 @@ export default function SignupPage() {
           name: "",
           email: "",
           password: "",
-          confirmPassword: ""
+          confirmPassword: "",
+          role: "user",
+          specialization: "",
+          experience: ""
         });
         
         // Redirect to login page after a short delay
@@ -122,6 +145,32 @@ export default function SignupPage() {
           )}
 
           <form onSubmit={handleSubmit}>
+
+            <label>Register As</label>
+            <div className="role-selector">
+              <div className="radio-group">
+                <input 
+                  type="radio" 
+                  id="user-role"
+                  name="role"
+                  value="user"
+                  checked={formData.role === "user"}
+                  onChange={handleChange}
+                />
+                <label htmlFor="user-role">User</label>
+              </div>
+              <div className="radio-group">
+                <input 
+                  type="radio" 
+                  id="doctor-role"
+                  name="role"
+                  value="doctor"
+                  checked={formData.role === "doctor"}
+                  onChange={handleChange}
+                />
+                <label htmlFor="doctor-role">Doctor</label>
+              </div>
+            </div>
 
             <label>Full Name</label>
             <div className="input-field">
@@ -180,6 +229,36 @@ export default function SignupPage() {
                 {showConfirm ? <EyeOff size={18}/> : <Eye size={18}/>}
               </span>
             </div>
+
+            {/* CONDITIONAL DOCTOR FIELDS */}
+            {formData.role === "doctor" && (
+              <>
+                <label>Specialization</label>
+                <div className="input-field">
+                  <User size={18}/>
+                  <input 
+                    type="text" 
+                    name="specialization"
+                    placeholder="e.g., Gynecology, Endocrinology"
+                    value={formData.specialization}
+                    onChange={handleChange}
+                  />
+                </div>
+
+                <label>Years of Experience</label>
+                <div className="input-field">
+                  <User size={18}/>
+                  <input 
+                    type="number" 
+                    name="experience"
+                    placeholder="Enter years of experience"
+                    value={formData.experience}
+                    onChange={handleChange}
+                    min="0"
+                  />
+                </div>
+              </>
+            )}
 
             <div className="checkbox">
               <input type="checkbox" required/>
